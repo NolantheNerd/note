@@ -1,0 +1,116 @@
+#!/bin/sh
+
+# Manage your notes without ever leaving the command line!
+# Copyright (C) 2023 Nolan McMahon
+#
+# This file is part of note.
+#
+# note is licensed under the terms of the BSD 3-Clause License
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice,
+# this list of conditions and the following disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+# this list of conditions and the following disclaimer in the documentation
+# and/or other materials provided with the distribution.
+#
+# 3. Neither the name of the copyright holder nor the names of its contributors
+# may be used to endorse or promote products derived from this software without
+# specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS”
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+
+notes_dir=${XDG_DATA_HOME:-${HOME}/.local/share}/note
+remote_dir=${NOTE_REMOTE}
+
+# Create Notes Directory (if necessary)
+[ -d $notes_dir ] || mkdir -p $notes_dir
+
+# New Note
+if [ -z "$1" ] && [ $1 = "n" ];
+then
+	name=$(( $(( $(ls -1 $notes_dir | sort -gr | sed 1q | cut -f 1 -d '.') )) + 1 ))
+	$EDITOR $notes_dir/$name.md
+	if [[ ! -z $remote_dir ]]; then
+		rsync -rtqzP --delete $notes_dir $remote_dir
+	fi
+
+# Search Notes
+elif [ -z "$1" ] && [ $1 = "f" ];
+then
+	cd $notes_dir && grep -riI -m 1 -C 2 --color "$2" ./ && cd
+
+# Delete Note
+elif [ -z "$1" ] && [ $1 = "d" ];
+then
+	rm $notes_dir/$2.md
+	old=$(($2 + 1))
+	new=$(($2))
+	max=$(( $(ls -1 $notes_dir | sort -gr | sed 1q | cut -f 1 -d '.') ))
+	while $(( $old <= $max ));
+	do
+		mv $old.md $new.md
+		old=$(($old + 1))
+		new=$(($new + 1))
+	done
+	if [[ ! -z $remote_dir ]]; then
+		rsync -rtqzP --delete $notes_dir $remote_dir
+	fi
+
+# View Note
+elif [ -z "$1" ] && [ $1 = "v" ];
+then
+	lowdown -tterm $notes_dir/$2.md | less --quit-if-one-screen -RX
+
+# Sync Notes
+elif [ -z "$1" ] && [ $1 = "s" ];
+then
+	if [[ ! -z $remote_dir ]]; then
+		rsync -rtqzP --delete $remote_dir $notes_dir
+	else
+		echo "No remote set! Please export NOTE_REMOTE to sync."
+	fi
+
+# Edit Note
+elif [ -z "$1" ] && [ $1 = "e" ];
+then
+	$EDITOR $notes_dir/$2.md
+	if [[ ! -z $remote_dir ]]; then
+		rsync -rtqzP --delete $notes_dir $remote_dir
+	fi
+
+# List Notes
+elif [ -z "$1" ] && [ $1 = "l" ];
+then
+	names=$(ls -1 $notes_dir | sort -g)
+	cd $notes_dir && head -n 5 $names | lowdown -tterm - | less --quit-if-one-screen -RX && cd
+
+# Help
+else
+	echo "note - Manage your notes without ever leaving the command line!
+
+	Usage: note [COMMAND] [ARGS]
+
+	Commands:
+	n			Create a brand new note
+	f [string]	Search all notes for [string]
+	d [number]	Delete note [number]
+	v [number]	View note [number]
+	s			Sync all notes with remote
+	e [number]	Edit note [number]
+	l			List notes
+	h			Print help message"
+fi
