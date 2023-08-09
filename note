@@ -40,18 +40,18 @@ remote_dir=${NOTE_REMOTE}
 [ -d $notes_dir ] || mkdir -p $notes_dir
 
 # New Note
-if [ -z "$1" ] && [ $1 = "n" ];
+if [ ! -z $1 ] && [ $1 = "n" ];
 then
 	name=$(( $(( $(ls -1 $notes_dir | sort -gr | sed 1q | cut -f 1 -d '.') )) + 1 ))
 	$EDITOR $notes_dir/$name.md
 
 # Search Notes
-elif [ -z "$1" ] && [ $1 = "f" ];
+elif [ ! -z $1 ] && [ $1 = "f" ];
 then
 	cd $notes_dir && grep -riI -m 1 -C 2 --color "$2" ./ && cd
 
 # Delete Note
-elif [ -z "$1" ] && [ $1 = "d" ];
+elif [ ! -z $1 ] && [ $1 = "d" ];
 then
 	rm $notes_dir/$2.md
 	old=$(($2 + 1))
@@ -65,12 +65,12 @@ then
 	done
 
 # View Note
-elif [ -z "$1" ] && [ $1 = "v" ];
+elif [ ! -z $1 ] && [ $1 = "v" ];
 then
 	lowdown -tterm $notes_dir/$2.md | less --quit-if-one-screen -RX
 
 # Sync Notes
-elif [ -z "$1" ] && [ $1 = "s" ];
+elif [ ! -z $1 ] && [ $1 = "s" ];
 then
 	if [[ ! -z $remote_dir ]]; then
 		rsync -rtqz --partial --delete $remote_dir $notes_dir
@@ -79,7 +79,7 @@ then
 	fi
 
 # Backup Notes
-elif [ -z "$1" ] && [ $1 = "b" ];
+elif [ ! -z $1 ] && [ $1 = "b" ];
 then
 	if [[ ! -z $remote_dir ]]; then
 		rsync -rtqz --partial --delete $notes_dir $remote_dir
@@ -88,12 +88,12 @@ then
 	fi
 
 # Edit Note
-elif [ -z "$1" ] && [ $1 = "e" ];
+elif [ ! -z $1 ] && [ $1 = "e" ];
 then
 	$EDITOR $notes_dir/$2.md
 
 # List Notes
-elif [ -z "$1" ] && [ $1 = "l" ];
+elif [ ! -z $1 ] && [ $1 = "l" ];
 then
 	names=$(ls -1 $notes_dir | sort -g)
 	cd $notes_dir && head -n 5 $names | lowdown -tterm - | less --quit-if-one-screen -RX && cd
@@ -102,16 +102,16 @@ then
 else
 	echo "note - Manage your notes without ever leaving the command line!
 
-	Usage: note [COMMAND] [ARGS]
+Usage: note [COMMAND] [ARGS]
 
-	Commands:
-	n			Create a brand new note
-	f [string]	Search all notes for [string]
-	d [number]	Delete note [number]
-	v [number]	View note [number]
-	s			Pull notes down from remote
-	b			Backup local notes to remote
-	e [number]	Edit note [number]
-	l			List notes
-	h			Print help message"
+Commands:
+	n           Create a brand new note
+	f [string]  Search all notes for [string]
+	d [number]  Delete note [number]
+	v [number]  View note [number]
+	s           Pull notes down from remote
+	b           Backup local notes to remote
+	e [number]  Edit note [number]
+	l           List notes
+	h           Print help message"
 fi
