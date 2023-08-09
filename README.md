@@ -26,7 +26,8 @@ note [COMMAND] [ARGS]
 - f [string]    Search all notes for [string]
 - d [number]    Delete note [number]
 - v [number]    View note [number]
-- s             Sync all notes with remote
+- s             Pull notes down from remote
+- b             Backup local notes to remote
 - e [number]    Edit note [number]
 - l             List notes
 - h             Print help message

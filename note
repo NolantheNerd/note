@@ -33,7 +33,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-notes_dir=${XDG_DATA_HOME:-${HOME}/.local/share}/note
+notes_dir=${XDG_DATA_HOME:-${HOME}/.local/share}/note/
 remote_dir=${NOTE_REMOTE}
 
 # Create Notes Directory (if necessary)
@@ -44,9 +44,6 @@ if [ -z "$1" ] && [ $1 = "n" ];
 then
 	name=$(( $(( $(ls -1 $notes_dir | sort -gr | sed 1q | cut -f 1 -d '.') )) + 1 ))
 	$EDITOR $notes_dir/$name.md
-	if [[ ! -z $remote_dir ]]; then
-		rsync -rtqzP --delete $notes_dir $remote_dir
-	fi
 
 # Search Notes
 elif [ -z "$1" ] && [ $1 = "f" ];
@@ -66,9 +63,6 @@ then
 		old=$(($old + 1))
 		new=$(($new + 1))
 	done
-	if [[ ! -z $remote_dir ]]; then
-		rsync -rtqzP --delete $notes_dir $remote_dir
-	fi
 
 # View Note
 elif [ -z "$1" ] && [ $1 = "v" ];
@@ -79,18 +73,24 @@ then
 elif [ -z "$1" ] && [ $1 = "s" ];
 then
 	if [[ ! -z $remote_dir ]]; then
-		rsync -rtqzP --delete $remote_dir $notes_dir
+		rsync -rtqz --partial --delete $remote_dir $notes_dir
 	else
 		echo "No remote set! Please export NOTE_REMOTE to sync."
+	fi
+
+# Backup Notes
+elif [ -z "$1" ] && [ $1 = "b" ];
+then
+	if [[ ! -z $remote_dir ]]; then
+		rsync -rtqz --partial --delete $notes_dir $remote_dir
+	else
+		echo "No remote set! Please export NOTE_REMOTE to backup."
 	fi
 
 # Edit Note
 elif [ -z "$1" ] && [ $1 = "e" ];
 then
 	$EDITOR $notes_dir/$2.md
-	if [[ ! -z $remote_dir ]]; then
-		rsync -rtqzP --delete $notes_dir $remote_dir
-	fi
 
 # List Notes
 elif [ -z "$1" ] && [ $1 = "l" ];
@@ -109,7 +109,8 @@ else
 	f [string]	Search all notes for [string]
 	d [number]	Delete note [number]
 	v [number]	View note [number]
-	s			Sync all notes with remote
+	s			Pull notes down from remote
+	b			Backup local notes to remote
 	e [number]	Edit note [number]
 	l			List notes
 	h			Print help message"
