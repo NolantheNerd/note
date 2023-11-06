@@ -48,7 +48,7 @@ then
 # Search Notes
 elif [ ! -z $1 ] && [ $1 = "f" ];
 then
-	cd $notes_dir && grep -riI -m 1 -C 2 --color "$2" ./ && cd
+	cd $notes_dir && grep -riI -m 1 -C 2 --color=always "$2" ./ | less -rF && cd
 
 # Delete Note
 elif [ ! -z $1 ] && [ $1 = "d" ];
