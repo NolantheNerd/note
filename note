@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Manage your notes without ever leaving the command line!
 # Copyright (C) 2023 Nolan McMahon
@@ -53,13 +53,13 @@ then
 # Delete Note
 elif [ ! -z $1 ] && [ $1 = "d" ];
 then
-	rm $notes_dir/$2.md
+	rm $notes_dir$2.md
 	old=$(($2 + 1))
 	new=$(($2))
 	max=$(( $(ls -1 $notes_dir | sort -gr | sed 1q | cut -f 1 -d '.') ))
-	while $(( $old <= $max ));
+	while [ $old -le $max ];
 	do
-		mv $old.md $new.md
+		mv $notes_dir$old.md $notes_dir$new.md
 		old=$(($old + 1))
 		new=$(($new + 1))
 	done
