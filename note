@@ -67,7 +67,7 @@ then
 # View Note
 elif [ ! -z $1 ] && [ $1 = "v" ];
 then
-	lowdown -tterm $notes_dir/$2.md | less --quit-if-one-screen -RX
+	cat $notes_dir/$2.md | less --quit-if-one-screen -RX
 
 # Sync Notes
 elif [ ! -z $1 ] && [ $1 = "s" ];

@@ -7,7 +7,6 @@ Manage your notes without ever leaving the command line!
 ## Installation
 
 Install dependencies:
-- [lowdown](https://kristaps.bsd.lv/lowdown/)
 - [rsync](https://rsync.samba.org/)
 
 Then clone this repo, and 'sudo make install'.
