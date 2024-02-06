@@ -2,7 +2,7 @@
 
 Manage your notes without ever leaving the command line!
 
-![Note Demo](demo.gif)
+![Note Demo](docs/demo.gif)
 
 ## Installation
 
